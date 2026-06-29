@@ -1,12 +1,11 @@
 import numpy as np
 from activations import get_activation
-from test_dataset import california_housing_market_vector_dataset, california_housing_vector_test_value
 
 rng = np.random.default_rng()
 
 class Layer:
     def __init__(self, input_size, output_size, activation):
-        self.weights = rng.normal(0.0, 1.0, (input_size, output_size))
+        self.weights = rng.normal(0.0, np.sqrt(2.0 / input_size), (input_size, output_size))
         self.biases = np.zeros(output_size)
         self.wgrad = np.zeros_like(self.weights)
         self.bgrad = np.zeros_like(self.biases)
@@ -69,25 +68,27 @@ class MLP:
         
         return loss
 
-    def fit(self, alpha, epochs, inputs, targets):
+    def fit(self, inputs, targets, learning_rate, epochs):
         losses = []
         for _ in range(epochs):
             current_loss = self._backward(inputs, targets)
             losses.append(current_loss)
             for layer in self.layers:
-                layer.weights -= layer.wgrad * alpha
-                layer.biases -= layer.bgrad * alpha
+                layer.weights -= layer.wgrad * learning_rate
+                layer.biases -= layer.bgrad * learning_rate
         
-        return losses[::int(10e3)]
+        return losses
 
 if __name__ == "__main__":
+    from test_dataset import california_housing_market_vector_dataset, california_housing_vector_test_value
     mlp = MLP([9, 16, 16, 1], ["relu", "relu", "linear"])
     inputs, targets = california_housing_market_vector_dataset()
     test_input, test_target = california_housing_vector_test_value()
 
-    alpha = 0.05
-    epochs = int(10e4)
-    losses = mlp.fit(alpha, epochs, inputs, targets)
+    learning_rate = 0.05
+    epochs = int(10e2)
+    step = int(epochs/10)
+    losses = mlp.fit(inputs, targets, learning_rate, epochs)[::step]
     for i in losses:
         print(i)
         print("-" * 40)
