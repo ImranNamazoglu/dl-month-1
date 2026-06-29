@@ -1,5 +1,6 @@
 import numpy as np
 from activations import get_activation
+from test_dataset import california_housing_market_vector_dataset, california_housing_vector_test_value
 
 rng = np.random.default_rng()
 
@@ -65,6 +66,32 @@ class MLP:
 
             layer.wgrad = y[i + 1].T @ layer.dL_dz
             layer.bgrad = np.sum(layer.dL_dz, axis=0)
+        
+        return loss
+
+    def fit(self, alpha, epochs, inputs, targets):
+        losses = []
+        for _ in range(epochs):
+            current_loss = self._backward(inputs, targets)
+            losses.append(current_loss)
+            for layer in self.layers:
+                layer.weights -= layer.wgrad * alpha
+                layer.biases -= layer.bgrad * alpha
+        
+        return losses[::int(10e3)]
 
 if __name__ == "__main__":
-    pass
+    mlp = MLP([9, 16, 16, 1], ["relu", "relu", "linear"])
+    inputs, targets = california_housing_market_vector_dataset()
+    test_input, test_target = california_housing_vector_test_value()
+
+    alpha = 0.05
+    epochs = int(10e4)
+    losses = mlp.fit(alpha, epochs, inputs, targets)
+    for i in losses:
+        print(i)
+        print("-" * 40)
+
+    prediction, _, _ = mlp(test_input)
+
+    print(prediction, test_target)

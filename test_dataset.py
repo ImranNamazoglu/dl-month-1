@@ -1,6 +1,6 @@
 import math
-
-from engine import Value
+import numpy as np
+from microgradimplengine import Value
 
 
 def _values(row):
@@ -155,6 +155,20 @@ def california_housing_test_value():
     features = [3.0, 2.0, 1650.0, 40.0, 8.0, 7.5, 32.0, 10.0, 2.8]
     target = 9.5 / california_housing_target_scale()
     return normalize_california_housing_features(features), target
+
+
+def california_housing_market_vector_dataset():
+    xs, ys = california_housing_market_dataset()
+    inputs = np.array([[feature.data for feature in row] for row in xs], dtype=float)
+    targets = np.array(ys, dtype=float).reshape(-1, 1)
+    return inputs, targets
+
+
+def california_housing_vector_test_value():
+    features, target = california_housing_test_value()
+    inputs = np.array([[feature.data for feature in features]], dtype=float)
+    targets = np.array([[target]], dtype=float)
+    return inputs, targets
 
 
 def tiny_regression_dataset():
